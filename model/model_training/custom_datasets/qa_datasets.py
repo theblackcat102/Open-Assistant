@@ -654,3 +654,88 @@ class GPTeacher_Roleplay(Dataset):
     def __getitem__(self, index: int) -> DatasetEntry:
         dialogue = self.rows[index]
         return dialogue
+
+class EvolInstruction(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        import json
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        dataset = load_dataset('WizardLM/WizardLM_evol_instruct_V2_196k', cache_dir=cache_dir)
+        for row in dataset['train']:
+            questions = []
+            answers = []
+            for i in range(0, len(row['conversations']), 2):
+                questions.append(row['conversations'][i]['value'])
+                answers.append(row['conversations'][i+1]['value'])
+            self.rows.append(create_dataset_entry_qa(
+                model=self.mode,
+                questions=questions,
+                answers=answers
+            ))
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
+class NLUInstruction(Dataset):
+    def __init__(self, cache_dir: str | Path, data_filename: str, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        import json
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        
+        with open(os.path.join(cache_dir, data_filename), 'r') as f:
+            for line in f:
+                payload = json.loads(line)
+                entry = create_dataset_entry_qa(
+                            mode=self.mode,
+                            questions=[payload["question"]],
+                            answers=[payload["reply"].lstrip()],
+                )
+                self.rows.append(entry)
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
+
+class Vicuna(Dataset):
+    def __init__(self, cache_dir: str | Path, data_filename: str, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        import json
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        
+        with open(os.path.join(cache_dir, data_filename), 'r') as f:
+            for line in f:
+                payload = json.loads(line)
+                questions = []
+                answers = []
+                for i in range(0, len(payload['conversations']), 2):
+                    questions.append(payload['conversations'][i])
+                    answers.append(payload['conversations'][i+1])
+                self.rows.append(create_dataset_entry_qa(
+                    model=self.mode,
+                    questions=questions,
+                    answers=answers
+                ))
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
