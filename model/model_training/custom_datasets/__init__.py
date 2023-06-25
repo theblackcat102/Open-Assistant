@@ -20,6 +20,8 @@ from model_training.custom_datasets.qa_datasets import (
     TranslatedQA,
     Vicuna,
     WebGPT,
+    NLUInstruction,
+    EvolInstruction,
     load_alpaca_dataset,
 )
 from model_training.custom_datasets.rank_datasets import AugmentedOA
@@ -143,6 +145,10 @@ def get_one_dataset(
         dataset = TranslatedQA(data_path)
     elif dataset_name == "vicuna":
         dataset = Vicuna(cache_dir=data_path, **kwargs)
+    elif dataset_name == "evol_v2":
+        dataset = EvolInstruction(cache_dir=data_path, **kwargs)
+    elif dataset_name == "nlu_instruct":
+        dataset = NLUInstruction(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
         train, eval = load_oasst_export(data_path=data_path, val_split=val_split, mode=mode, **kwargs)
     elif dataset_name == "hf_summary":
