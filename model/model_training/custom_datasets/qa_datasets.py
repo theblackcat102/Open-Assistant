@@ -682,6 +682,34 @@ class EvolInstruction(Dataset):
         dialogue = self.rows[index]
         return dialogue
 
+
+class LIMA(Dataset):
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        dataset = load_dataset('GAIR/lima', cache_dir=cache_dir)
+        for row in dataset['train']:
+            questions = []
+            answers = []
+            for i in range(0, len(row['conversations']), 2):
+                questions.append(row['conversations'][i])
+                answers.append(row['conversations'][i+1])
+            self.rows.append(create_dataset_entry_qa(
+                mode=self.mode,
+                questions=questions,
+                answers=answers
+            ))
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
 class NLUInstruction(Dataset):
     def __init__(self, cache_dir: str | Path, data_filename: str, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
