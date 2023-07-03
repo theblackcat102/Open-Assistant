@@ -710,6 +710,55 @@ class LIMA(Dataset):
         dialogue = self.rows[index]
         return dialogue
 
+class MOSS(Dataset):
+
+
+    def __init__(self, cache_dir: str | Path, mode: str = "sft", input_max_length: int = 2048) -> None:
+        super().__init__()
+        self.rows = []
+        if mode not in ("sft", "rl"):
+            raise NotImplementedError(f"Currently only the modes 'sft' and 'rl' are implemented. Received {mode}.")
+        self.mode = mode
+        websearch = """Web search: a function which allows you to search the web and reference based on the result.
+            function: Search(query)\n    parameters :\n    - query: a string of query text\n    returns: a list of serp results 
+        """
+        text2image = """Text-to-image: Generate an image from a text caption
+            function: Text2Image(text_prompt)\n    parameters :\n    - text_prompt: a string of text caption you feed to midjourney or stable diffusion\n    returns: "Image generated successfully" message
+        """
+        equation_solver = """Equation solver: A complex equation solver which finds all the possible value for the parameters in the equation string
+            function: Solve(equation_str)\n    parameters :\n    - equation_str: possible format is Unary quadratic equation with each equations split by ;  \n    returns: the value for each of the variables
+        """
+        calculator = """Calculator: A calculator which pass in a simple arithmetic equation and the calculator will return the value
+            function: Calculate(equation_str)\n    parameters :\n    - equation_str: a arithmetic equation like 1+1\n    returns: the value for equation string
+        """
+        text2speech = """Text-to-speech: generate a text to speech conversations (TTS) function
+            function: Text2Speech(text)\n    parameters :\n    - text: a string of text caption you want to convert to speech audio\n    returns: "Audio generated successfully" message
+        """
+        background = f'{websearch}{text2image}{calculator}{equation_solver}{text2speech}'
+        dataset = load_dataset('theblackcat102/moss', cache_dir=cache_dir)
+        for row in dataset['train']:
+            questions = []
+            answers = []
+            for i in range(0, len(row['conversations']), 2):
+                questions.append(row['conversations'][i])
+                answers.append(row['conversations'][i+1])
+            first_question = questions[0]
+            first_question = background+'\n'+row['settings']+'\n'+first_question
+            questions[0] = first_question
+            self.rows.append(create_dataset_entry_qa(
+                mode=self.mode,
+                questions=questions,
+                answers=answers
+            ))
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int) -> DatasetEntry:
+        dialogue = self.rows[index]
+        return dialogue
+
+
 class NLUInstruction(Dataset):
     def __init__(self, cache_dir: str | Path, data_filename: str, mode: str = "sft", input_max_length: int = 2048) -> None:
         super().__init__()
