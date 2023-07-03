@@ -695,8 +695,9 @@ class LIMA(Dataset):
             questions = []
             answers = []
             for i in range(0, len(row['conversations']), 2):
-                questions.append(row['conversations'][i])
-                answers.append(row['conversations'][i+1])
+                if (i+1) < len(row['conversations']):
+                    questions.append(row['conversations'][i])
+                    answers.append(row['conversations'][i+1])
             self.rows.append(create_dataset_entry_qa(
                 mode=self.mode,
                 questions=questions,
