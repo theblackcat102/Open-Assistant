@@ -23,6 +23,7 @@ from model_training.custom_datasets.qa_datasets import (
     NLUInstruction,
     EvolInstruction,
     LIMA,
+    MOSS,
     load_alpaca_dataset,
 )
 from model_training.custom_datasets.rank_datasets import AugmentedOA
@@ -150,6 +151,8 @@ def get_one_dataset(
         dataset = EvolInstruction(cache_dir=data_path, **kwargs)
     elif dataset_name == "lima":
         dataset = LIMA(cache_dir=data_path, **kwargs)
+    elif dataset_name == "moss":
+        dataset = MOSS(cache_dir=data_path, **kwargs)
     elif dataset_name == "nlu_instruct":
         dataset = NLUInstruction(cache_dir=data_path, **kwargs)
     elif dataset_name == "oasst_export":
