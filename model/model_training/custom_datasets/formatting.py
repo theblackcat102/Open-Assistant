@@ -13,6 +13,8 @@ QA_SPECIAL_TOKENS = {
     "System": "<|system|>",
     "StartPrefix": "<|prefix_begin|>",
     "EndPrefix": "<|prefix_end|>",
+    "Command": "<|command|>",
+    "Thought": "<|thought|>",
 }
 
 

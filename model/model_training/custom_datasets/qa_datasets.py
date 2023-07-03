@@ -734,7 +734,7 @@ class MOSS(Dataset):
                 questions.append(row['conversations'][i])
                 answers.append(row['conversations'][i+1])
             first_question = questions[0]
-            first_question = background+'\nSettings:\n'+row['settings']+'\n'+first_question
+            first_question = background+'\nSettings:\n'+row['settings']+'\n<|prompter|>'+first_question
             questions[0] = first_question
             self.rows.append(create_dataset_entry_qa(
                 mode=self.mode,
